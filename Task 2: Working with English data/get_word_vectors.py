@@ -3,7 +3,7 @@ import spacy
 # The next step takes some time to execute.
 NLP = spacy.load("en")
 
-def get_word_vectors(sentence):
+def get_sentence_vectors(sentence):
 	"""
 	Returns word vectors for complete sentence as a python list"""
 	s = NLP(unicode(sentence))
