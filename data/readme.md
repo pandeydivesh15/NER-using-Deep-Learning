@@ -1,1 +1,1 @@
-#### The CoNLL-2003 data is used from (this repo)[https://github.com/synalp/NER]. I want to thank the developer for sharing this data in GitHub.
+#### The CoNLL-2003 data is used from [this repo](https://github.com/synalp/NER). I want to thank the developer for sharing this data in GitHub.
