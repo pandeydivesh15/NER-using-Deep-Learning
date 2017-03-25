@@ -6,8 +6,8 @@ NLP = spacy.load("en")
 def get_sentence_vectors(sentence):
 	"""
 	Returns word vectors for complete sentence as a python list"""
-	s = NLP(unicode(sentence))
-	vec = [ word.vector for word in s ]
+	s = sentence.strip().split()
+	vec = [ get_word_vector(word) for word in s ]
 	return vec
 
 def get_word_vector(word):

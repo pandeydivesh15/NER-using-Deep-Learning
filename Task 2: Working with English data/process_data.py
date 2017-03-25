@@ -1,7 +1,5 @@
-from keras.preprocessing import sequence
 import numpy as np
-import pandas as pd
-
+from keras.preprocessing import sequence
 # For getting English word vectors
 from get_word_vectors import get_word_vector, get_sentence_vectors
 
@@ -12,9 +10,9 @@ class DataHandler():
 
 	def __init__(self, datapath):
 		# Default values
-		self.LEN_NAMED_CLASSES = 5 #4 names and 1 null class
+		self.LEN_NAMED_CLASSES = 10 # 4 names and 1 null class
 		self.NULL_CLASS = "O"
-		self.LEN_WORD_VECTORS = 300
+		self.LEN_WORD_VECTORS = 50
 
 		self.tags = []
 		# string tags mapped to int and one hot vectors 
@@ -38,8 +36,8 @@ class DataHandler():
 				line = l.strip().split()
 				if line:
 					word, named_tag = line[0], line[3]
-					if named_tag != self.NULL_CLASS:
-						named_tag = self.process_tag(named_tag)
+					# if named_tag != self.NULL_CLASS:
+					# 	named_tag = self.process_tag(named_tag)
 
 					if named_tag not in self.tags:
 						self.tags.append(named_tag)
@@ -51,7 +49,7 @@ class DataHandler():
 						_id+=1;
 
 					# Get word vectors for given word	
-					sentence.append(get_word_vector(word))
+					sentence.append(get_word_vector(word)[:self.LEN_WORD_VECTORS])
 					sentence_tags.append(self.tag_to_one_hot_map[named_tag])
 				else:
 					all_data.append( (sentence, sentence_tags) );
@@ -66,7 +64,7 @@ class DataHandler():
 
 		for vectors, one_hot_tags in all_data:
 			# Pad the sequences and make them all of same length
-			temp_X = np.zeros(300)
+			temp_X = np.zeros(self.LEN_WORD_VECTORS, dtype = np.int32)
 			temp_Y = np.array(self.tag_to_one_hot_map[self.NULL_CLASS])
 			pad_length = self.max_len - len(vectors)
 
@@ -77,8 +75,8 @@ class DataHandler():
 		self.x = np.array(self.x)
 		self.y = np.array(self.y)
 
-	def process_tag(self, tag):
-		return tag[2:]
+	# def process_tag(self, tag):
+	# 	return tag[2:]
 
 	def get_data(self):
 		# Returns proper data for training/testing
@@ -86,6 +84,7 @@ class DataHandler():
 
 	def encode_sentence(self, sentence):
 		vectors = get_sentence_vectors(sentence)
+		vectors = [v[:self.LEN_WORD_VECTORS] for v in vectors]
 		return sequence.pad_sequences([vectors], maxlen=self.max_len, dtype=np.float32)
 
 	def decode_result(self, result_sequence):
@@ -93,6 +92,7 @@ class DataHandler():
 		for pred in result_sequence:
 			_id = np.argmax(pred)
 			pred_named_tags.append(self.tag_id_map[_id])
+		return pred_named_tags
 
 
 
