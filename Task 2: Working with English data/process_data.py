@@ -10,9 +10,9 @@ class DataHandler():
 
 	def __init__(self, datapath):
 		# Default values
-		self.LEN_NAMED_CLASSES = 10 # 4 names and 1 null class
+		self.LEN_NAMED_CLASSES = 5 # 4 names and 1 null class
 		self.NULL_CLASS = "O"
-		self.LEN_WORD_VECTORS = 50
+		self.LEN_WORD_VECTORS = 60
 
 		self.tags = []
 		# string tags mapped to int and one hot vectors 
@@ -36,8 +36,8 @@ class DataHandler():
 				line = l.strip().split()
 				if line:
 					word, named_tag = line[0], line[3]
-					# if named_tag != self.NULL_CLASS:
-					# 	named_tag = self.process_tag(named_tag)
+					if named_tag != self.NULL_CLASS:
+						named_tag = self.process_tag(named_tag)
 
 					if named_tag not in self.tags:
 						self.tags.append(named_tag)
@@ -75,8 +75,9 @@ class DataHandler():
 		self.x = np.array(self.x)
 		self.y = np.array(self.y)
 
-	# def process_tag(self, tag):
-	# 	return tag[2:]
+	def process_tag(self, tag):
+		# For simplicity, removing any initial I- or B- tag
+		return tag[2:]
 
 	def get_data(self):
 		# Returns proper data for training/testing

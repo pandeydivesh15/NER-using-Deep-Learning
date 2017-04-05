@@ -10,6 +10,8 @@ from keras.regularizers import l2
 from keras import metrics
 
 import numpy as np
+import pandas as pd
+from sklearn.metrics import confusion_matrix, classification_report
 
 
 class NER():
@@ -22,7 +24,7 @@ class NER():
 		self.x_test = None
 		self.y_test = None
 
-	def make_and_compile(self, units = 100, dropout = 0.2, regul_alpha = 0.0):
+	def make_and_compile(self, units = 150, dropout = 0.2, regul_alpha = 0.0):
 		self.model = Sequential()
 		# Bidirectional LSTM with 100 outputs/memory units
 		self.model.add(Bidirectional(LSTM(units, 
@@ -41,7 +43,7 @@ class NER():
 						   metrics=['accuracy'])
 		print self.model.summary()
 
-	def train(self, train_split = 0.8, epochs = 20, batch_size = 50):
+	def train(self, train_split = 0.8, epochs = 10, batch_size = 50):
 		split_mask = np.random.rand(len(self.x)) < (train_split)
 		self.x_train = self.x[split_mask]
 		self.y_train = self.y[split_mask]
@@ -51,15 +53,40 @@ class NER():
 		self.model.fit(self.x_train, self.y_train, nb_epoch=epochs, batch_size=batch_size)
 
 	def evaluate(self):
-		score = self.model.evaluate(self.x_test, self.y_test)
-		print score
+		predicted_tags= []
+		test_data_tags = []
+
+		for x,y in zip(self.x_test, self.y_test):
+			tags = self.model.predict(np.array([x]), batch_size=1)[0]
+			pred_tags = self.data_reader.decode_result(tags)
+			test_tags = self.data_reader.decode_result(y)
+			for i,j in zip(pred_tags, test_tags):
+				if j != self.data_reader.NULL_CLASS:
+					test_data_tags.append(j)
+					predicted_tags.append(i)
+
+
+		predicted_tags = np.array(predicted_tags)
+		test_data_tags = np.array(test_data_tags)
+		print classification_report(test_data_tags, predicted_tags)
+
+		simple_conf_matrix = confusion_matrix(test_data_tags,predicted_tags)
+		all_tags = sorted(self.data_reader.tags)
+		conf_matrix = pd.DataFrame(
+							columns = all_tags,
+							index = all_tags)
+		for x,y in zip(simple_conf_matrix, all_tags):
+			conf_matrix[y] = x
+		conf_matrix = conf_matrix.transpose()
+		return conf_matrix
+		
 
 	def predict_tags(self, sentence):
 		sentence_list = sentence.strip().split()
 		sent_len = len(sentence_list)
 		# Get padded word vectors 
 		x = self.data_reader.encode_sentence(sentence)
-		tags = self.model.predict(x, batch_size = 1)[0]
+		tags = self.model.predict(x, batch_size=1)[0]
 
 		tags = tags[-sent_len:]
 		pred_tags = self.data_reader.decode_result(tags)
