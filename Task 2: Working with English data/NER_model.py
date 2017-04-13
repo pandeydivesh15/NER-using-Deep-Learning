@@ -61,7 +61,6 @@ class NER():
 			pred_tags = self.data_reader.decode_result(tags)
 			test_tags = self.data_reader.decode_result(y)
 			for i,j in zip(pred_tags, test_tags):
-				if j != self.data_reader.NULL_CLASS:
 					test_data_tags.append(j)
 					predicted_tags.append(i)
 
@@ -71,7 +70,7 @@ class NER():
 		print classification_report(test_data_tags, predicted_tags)
 
 		simple_conf_matrix = confusion_matrix(test_data_tags,predicted_tags)
-		all_tags = sorted(self.data_reader.tags)
+		all_tags = sorted(list(set(test_data_tags)))
 		conf_matrix = pd.DataFrame(
 							columns = all_tags,
 							index = all_tags)
