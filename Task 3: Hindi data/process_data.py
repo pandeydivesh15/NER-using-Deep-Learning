@@ -32,18 +32,17 @@ class DataHandler():
 		sentence_tags = []
 		all_data = []
 		pos = 0
+		is_entity = False
 		with codecs.open(datapath, 'r') as f:
-			for l in f:
-				if pos > 100000:
-					break;
-				pos+=1
+			for l in f:				
 				line = l.strip().split()
 				if line:
 					try:
 						word, named_tag = line[0], line[1]
 					except:
 						continue
-
+					if named_tag != self.NULL_CLASS:
+						is_entity = True
 					if named_tag not in self.tags:
 						self.tags.append(named_tag)
 						self.tag_id_map[_id] = named_tag
@@ -57,9 +56,19 @@ class DataHandler():
 					sentence.append(get_word_vector(word)[:self.LEN_WORD_VECTORS])
 					sentence_tags.append(self.tag_to_one_hot_map[named_tag])
 				else:
+					if not is_entity:
+						is_entity = False
+						sentence_tags = []
+						sentence = []
+						continue
 					all_data.append( (sentence, sentence_tags) );
 					sentence_tags = []
 					sentence = []
+					is_entity = False
+
+				if pos > 1000000:
+					break;
+				pos+=1
 
 		#Find length of largest sentence
 		self.max_len = 0
