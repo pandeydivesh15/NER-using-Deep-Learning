@@ -57,10 +57,14 @@ class NER():
 		test_data_tags = []
 
 		for x,y in zip(self.x_test, self.y_test):
+			flag = 0
 			tags = self.model.predict(np.array([x]), batch_size=1)[0]
 			pred_tags = self.data_reader.decode_result(tags)
 			test_tags = self.data_reader.decode_result(y)
 			for i,j in zip(pred_tags, test_tags):
+				if j != self.data_reader.NULL_CLASS:
+					flag = 1
+				if flag == 1:
 					test_data_tags.append(j)
 					predicted_tags.append(i)
 
